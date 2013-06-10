@@ -1,1 +1,162 @@
+org 100h
 
+include 'emu8086.inc' ;COMMAND TO INCLUDE EMU8086 LIBRARIES AND METHODS.
+DEFINE_SCAN_NUM        
+DEFINE_PRINT_STRING
+DEFINE_PRINT_NUM
+DEFINE_PRINT_NUM_UNS  
+
+
+
+JMP start
+ 
+msg0 DB 13,10,'[>>> TECNOLOGICO DE COSTA RICA <<<]'
+     DB 13,10,'[>>> CALCULATOR <<<] '
+     DB 13,10,13,10,'ENTER THE FIRST NUMBER: $' 
+msg2 DB 13,10,13,10,'ENTER DE SECOND NUMBER: $'
+
+       
+msg8 DB 13,10,13,10,"PLEASE ENTER THE OPERATOR TO APPLY "
+     DB 13,10,13,10,"OPERATORS ALLOWED (+,-,*,|): $"
+
+submenu:
+msg3 DB 13,10, 'THE RESULT OF THE AMOUNT IS:: $' 
+msg4 DB 13,10,'THE RESULT OF THE SUBTRACTION IS: $' 
+msg5 DB 13,10,'THE RESULT OF MULTIPLICATION IS: $' 
+msg6 DB 13,10,'THE RESULT OF THE DIVISION IS:: $'  
+
+num1 DW ?    ;DEFINING VARIABLES
+num2 DW ?    ;INITIALIZED VARIABLES WITHOUT VALUES.
+
+
+
+
+start:   
+
+MOV AH,09    ;CHARGE THE FIRST MESSAGE AND WHAT WE PRINT ON SCREEN.
+LEA DX,msg0 
+INT 21h 
+
+CALL SCAN_NUM   ;CALL THE FUNTION SCAN_NUM AND READ THE NUMBER FROM KEYBOARD. 
+MOV num1,CX     ;MOVE THE NUMBER TO NUM1 VARIABLE AND SAVE IN CX.
+
+MOV AH,09       ;CHARGE THE SECOND MESSAGE AND WHAT WE PRINT ON SCREEN.
+LEA DX,msg2  
+INT 21h 
+
+CALL SCAN_NUM   ;CALL THE FUNTION SCAN_NUM AND READ THE NUMBER FROM KEYBOARD.  
+MOV num2,CX     ;MOVE THE NUMBER TO NUM2 VARIABLE AND SAVE IN CX.
+
+
+
+;*************************************************************
+;LABEL STATED IN WHICH CARRY METHODS FOR ARITHMETIC OPERANDS.*
+;*************************************************************  
+
+get_op:         
+
+
+MOV AH,09 
+LEA DX,msg8     ;CHARGE THE EIGTH MESSAGE AND WHAT WE PRINT ON SCREEN.
+
+INT 21h 
+
+
+;*************************************************                                                
+;*                                               *
+; GET OPERATOR SIGN                              *
+; GET THE SIGN AND DEPENDING WHICH IS MADE A JUMP* 
+; TO METHOD FOR CALCULATE.                       *
+;*                                               *
+;************************************************* 
+ 
+
+MOV AH, 1
+INT 21h
+
+CMP AL, '+'
+JE sum
+
+CMP AL, '-'
+JE rest
+
+CMP AL, '*'
+JE multi
+
+
+CMP AL, '|'
+JE divi
+
+JMP get_op    ;IF YOU CHOOSE NONE OF SIGNS BACK TO MENU.
+  
+  
+;************************************************* 
+;*
+; IN THIS CODE SEGMENT,PERFOMED THE FOUR METHODS.* 
+;*
+;*************************************************  
+
+;----------
+;ADDITION|!
+;---------- 
+
+sum:
+   MOV AH,09 
+   LEA DX,msg3      ;CHARGE THE MESSAGE AND WHAT WE PRINT ON SCREEN.
+   INT 21h 
+
+   MOV AX,num1      ;MOVE THE FIRST NUMBER TYPED TO THE REGISTER AX.
+   ADD AX,num2      ;ADD THE NUMBERS TYPED AND SAVE IN REGISTER AX. 
+   CALL PRINT_NUM 
+   JMP start 
+   
+   
+;-------------   
+;SUBTRACTION|!
+;-------------
+
+rest:
+    MOV AH,09 
+    LEA DX,msg4     ;CHARGE THE MESSAGE AND WHAT WE PRINT ON SCREEN.
+    INT 21h 
+    
+    MOV AX,num1     ;MOVE THE FIRST NUMBER TYPED TO THE REGISTER AX.
+    SUB AX,num2     ;SUBTRACTION SECOND num2 OF THE num1 AND SAVE IN REGISTER AX.
+    CALL PRINT_NUM 
+    JMP start
+    
+      
+;----------------    
+;MULTIPLICATION|!
+;----------------  
+
+multi:
+    MOV AH,09 
+    LEA DX,msg5     ;CHARGE THE MESSAGE AND WHAT WE PRINT ON SCREEN.
+    INT 21h 
+
+    MOV AX,num1     ;MOVE THE FIRST NUMBER TYPED TO THE REGISTER AX.
+    MOV BX,num2     ;MOVE THE FIRST NUMBER TYPED TO THE REGISTER BX.
+    MUL BX          ;MAKES THE MULTIPLICATION  AX = AX*BX
+    CALL PRINT_NUM 
+    JMP start
+    
+    
+;----------
+;DIVISION|!
+;---------- 
+
+divi:
+    MOV AH,09 
+    LEA DX,msg6     ;CHARGE THE MESSAGE AND WHAT WE PRINT ON SCREEN.
+    INT 21h 
+    
+    XOR DX,DX 
+    MOV AX,num1     ;MOVE THE FIRST NUMBER TYPED TO THE REGISTER AX. 
+    MOV BX,num2     ;MOVE THE FIRST NUMBER TYPED TO THE REGISTER AX.
+    DIV BX 
+    CALL PRINT_NUM 
+    JMP start
+
+
+ret
